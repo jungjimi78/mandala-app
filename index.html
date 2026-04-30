@@ -1,0 +1,137 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>성장 만트라</title>
+
+  <link rel="manifest" href="./manifest.json?v=6">
+  <link rel="apple-touch-icon" href="./apple-touch-icon.png?v=6">
+  <meta name="apple-mobile-web-app-title" content="성장 만트라">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#7c3aed">
+
+  <link rel="stylesheet" href="./style.css" />
+</head>
+<body>
+
+  <div id="splash" class="splash-screen" aria-label="앱 로딩 중">
+    <img src="./icon.png?v=6" class="splash-icon" alt="">
+    <div class="splash-title">성장 만트라</div>
+  </div>
+
+
+<div id="splash" style="
+position:fixed; inset:0; 
+background:linear-gradient(135deg,#fff9ff,#e8dcff,#f7c4dc);
+display:flex; align-items:center; justify-content:center;
+z-index:9999; flex-direction:column; color:#28135f;">
+  <img src="./icon.png?v=6" style="width:120px; height:120px; border-radius:30px; box-shadow:0 20px 60px rgba(0,0,0,.4);">
+  <h2 style="margin-top:20px; font-weight:900;">성장 만트라</h2>
+</div>
+
+  <div id="app">
+    <header class="topbar">
+      <div class="brand">
+        <img src="./icon.png?v=6" class="app-icon" alt="성장 만트라 아이콘">
+        <div>
+          <div class="eyebrow">My iPhone App</div>
+          <h1 id="appNameTitle">성장 만트라</h1>
+        </div>
+      </div>
+      <button id="editBtn" class="primary-small">수정</button>
+    </header>
+
+    <main class="content">
+      <section id="homeView" class="view active">
+        <section class="hero">
+          <div class="hero-text">
+            <div class="eyebrow">오늘의 만트라</div>
+            <textarea id="mantraEdit" class="hidden"></textarea>
+            <h2 id="mantraText"></h2>
+          </div>
+          <img src="./icon.png?v=6" class="hero-icon" alt="">
+          <div class="progress-card">
+            <div class="progress-row">
+              <span>오늘 진행률</span>
+              <strong id="progressText">0/0 · 0%</strong>
+            </div>
+            <div class="bar"><div id="progressBar"></div></div>
+          </div>
+        </section>
+
+        <section class="date-row">
+          <button id="prevDate" class="round">‹</button>
+          <div>
+            <div id="dateLabel" class="date-label"></div>
+            <button id="todayBtn" class="tiny">오늘로 돌아가기</button>
+          </div>
+          <button id="nextDate" class="round">›</button>
+        </section>
+
+        <section id="categoryList" class="category-list"></section>
+      </section>
+
+      <section id="statsView" class="view">
+        <div class="panel">
+          <h2>최근 7일 성장 기록</h2>
+          <div id="statsList" class="stats-list"></div>
+        </div>
+      </section>
+
+      <section id="settingsView" class="view">
+        <div class="panel settings">
+          <div class="settings-head">
+            <img src="./icon.png?v=6" class="hero-icon" alt="">
+            <div>
+              <h2>앱 설정</h2>
+              <p>Safari에서 홈 화면에 추가하면 앱처럼 쓸 수 있어.</p>
+            </div>
+          </div>
+
+          <label>앱 이름</label>
+          <input id="appNameInput" class="text-input">
+
+          <label>테마 색상</label>
+          <div id="colorPicker" class="color-picker"></div>
+
+          <button id="resetDayBtn" class="ghost">선택한 날짜 체크 초기화</button>
+
+          <div class="tip">
+            아이폰: Safari에서 링크 열기 → 공유 버튼 → <b>홈 화면에 추가</b>.
+          </div>
+        </div>
+      </section>
+    </main>
+
+    <nav class="bottom-nav">
+      <button data-tab="home" class="nav-btn active">⌂<span>오늘</span></button>
+      <button data-tab="stats" class="nav-btn">▥<span>기록</span></button>
+      <button data-tab="settings" class="nav-btn">⚙<span>설정</span></button>
+    </nav>
+  </div>
+
+  <script src="./app.js" defer></script>
+
+
+  <script>
+    (function () {
+      function hideSplash() {
+        var splash = document.getElementById("splash");
+        if (!splash) return;
+        splash.classList.add("splash-hide");
+        setTimeout(function () {
+          if (splash && splash.parentNode) splash.parentNode.removeChild(splash);
+        }, 550);
+      }
+      window.addEventListener("load", function () {
+        setTimeout(hideSplash, 900);
+      });
+      setTimeout(hideSplash, 2500);
+    })();
+  </script>
+
+</body>
+
+</html>
