@@ -1,243 +1,101 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { Plus, Trash2, Edit3, Save, X, ChevronLeft, ChevronRight, Sparkles } from "lucide-react";
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <title>성장 만트라</title>
 
-const STORAGE_KEY = "growth-mandala-v1";
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="icon.png">
+  <meta name="apple-mobile-web-app-title" content="성장 만트라">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="theme-color" content="#7c3aed">
 
-const defaultData = {
-  mantra: "나는 바쁜 와중에도 나를 성장시키는 사람이다",
-  color: "purple",
-  categories: [
-    { id: "time", title: "시간관리", items: ["하루 10분 영어", "SNS 30분 제한", "아침 10분 나시간", "해야 할 일 3개만"] },
-    { id: "english", title: "영어 성장", items: ["10문장 쉐도잉", "ChatGPT 대화 연습", "표현 1개 내꺼 만들기", "틀려도 말하기"] },
-    { id: "health", title: "몸 & 건강", items: ["스트레칭 10분", "물 많이 마시기", "수면 7시간", "건강식 1끼"] },
-    { id: "mind", title: "멘탈 관리", items: ["완벽보다 지속", "비교 안하기", "감사 1개", "나한테 말 예쁘게 하기"] },
-    { id: "mom", title: "엄마로서 성장", items: ["아이 말 끝까지 듣기", "하루 1번 칭찬", "잔소리 대신 질문", "함께 웃는 시간"] },
-    { id: "money", title: "재정 & 미래", items: ["VOO 꾸준히", "지출 체크", "불필요 소비 줄이기", "장기 투자 유지"] },
-    { id: "routine", title: "루틴 & 실행력", items: ["체크리스트 확인", "5분 룰", "바로 실행", "기록 남기기"] },
-    { id: "rest", title: "나 자신 & 여유", items: ["나만의 시간", "좋아하는 것 하기", "카페/사우나 타임", "아무것도 안하기"] }
-  ]
-};
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div id="app">
+    <header class="topbar">
+      <div class="brand">
+        <img src="icon.png" class="app-icon" alt="성장 만트라 아이콘">
+        <div>
+          <div class="eyebrow">My iPhone App</div>
+          <h1 id="appNameTitle">성장 만트라</h1>
+        </div>
+      </div>
+      <button id="editBtn" class="primary-small">수정</button>
+    </header>
 
-const colorMap = {
-  purple: "from-purple-500 to-fuchsia-500",
-  pink: "from-pink-500 to-rose-500",
-  blue: "from-blue-500 to-cyan-500",
-  green: "from-emerald-500 to-lime-500",
-  orange: "from-orange-500 to-amber-500"
-};
+    <main class="content">
+      <section id="homeView" class="view active">
+        <section class="hero">
+          <div class="hero-text">
+            <div class="eyebrow">오늘의 만트라</div>
+            <textarea id="mantraEdit" class="hidden"></textarea>
+            <h2 id="mantraText"></h2>
+          </div>
+          <img src="icon.png" class="hero-icon" alt="">
+          <div class="progress-card">
+            <div class="progress-row">
+              <span>오늘 진행률</span>
+              <strong id="progressText">0/0 · 0%</strong>
+            </div>
+            <div class="bar"><div id="progressBar"></div></div>
+          </div>
+        </section>
 
-function todayKey(date = new Date()) {
-  const y = date.getFullYear();
-  const m = String(date.getMonth() + 1).padStart(2, "0");
-  const d = String(date.getDate()).padStart(2, "0");
-  return `${y}-${m}-${d}`;
-}
+        <section class="date-row">
+          <button id="prevDate" class="round">‹</button>
+          <div>
+            <div id="dateLabel" class="date-label"></div>
+            <button id="todayBtn" class="tiny">오늘로 돌아가기</button>
+          </div>
+          <button id="nextDate" class="round">›</button>
+        </section>
 
-function formatDate(dateKey) {
-  const date = new Date(dateKey + "T00:00:00");
-  return date.toLocaleDateString("ko-KR", { month: "long", day: "numeric", weekday: "short" });
-}
+        <section id="categoryList" class="category-list"></section>
+      </section>
 
-export default function App() {
-  const [appData, setAppData] = useState(defaultData);
-  const [logs, setLogs] = useState({});
-  const [selectedDate, setSelectedDate] = useState(todayKey());
-  const [editMode, setEditMode] = useState(false);
-  const [newItemText, setNewItemText] = useState({});
-  const [pulse, setPulse] = useState(false);
+      <section id="statsView" class="view">
+        <div class="panel">
+          <h2>최근 7일 성장 기록</h2>
+          <div id="statsList" class="stats-list"></div>
+        </div>
+      </section>
 
-  useEffect(() => {
-    const saved = localStorage.getItem(STORAGE_KEY);
-    if (saved) {
-      try {
-        const parsed = JSON.parse(saved);
-        setAppData(parsed.appData || defaultData);
-        setLogs(parsed.logs || {});
-      } catch (e) {
-        console.warn("Saved data could not be loaded.");
-      }
-    }
-  }, []);
-
-  useEffect(() => {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify({ appData, logs }));
-  }, [appData, logs]);
-
-  const allItems = useMemo(() => {
-    return appData.categories.flatMap(cat => cat.items.map(item => `${cat.id}::${item}`));
-  }, [appData]);
-
-  const dayLog = logs[selectedDate] || {};
-  const completed = allItems.filter(key => dayLog[key]).length;
-  const total = allItems.length;
-  const percent = total ? Math.round((completed / total) * 100) : 0;
-
-  const toggleItem = (catId, item) => {
-    const key = `${catId}::${item}`;
-    setLogs(prev => ({
-      ...prev,
-      [selectedDate]: {
-        ...(prev[selectedDate] || {}),
-        [key]: !(prev[selectedDate] || {})[key]
-      }
-    }));
-    setPulse(true);
-    if (navigator.vibrate) navigator.vibrate(35);
-    setTimeout(() => setPulse(false), 180);
-  };
-
-  const changeDate = (days) => {
-    const date = new Date(selectedDate + "T00:00:00");
-    date.setDate(date.getDate() + days);
-    setSelectedDate(todayKey(date));
-  };
-
-  const updateMantra = (value) => setAppData(prev => ({ ...prev, mantra: value }));
-  const updateCategoryTitle = (catId, title) => {
-    setAppData(prev => ({
-      ...prev,
-      categories: prev.categories.map(cat => cat.id === catId ? { ...cat, title } : cat)
-    }));
-  };
-  const updateItem = (catId, index, value) => {
-    setAppData(prev => ({
-      ...prev,
-      categories: prev.categories.map(cat => cat.id === catId ? { ...cat, items: cat.items.map((item, i) => i === index ? value : item) } : cat)
-    }));
-  };
-  const addItem = (catId) => {
-    const text = (newItemText[catId] || "").trim();
-    if (!text) return;
-    setAppData(prev => ({
-      ...prev,
-      categories: prev.categories.map(cat => cat.id === catId ? { ...cat, items: [...cat.items, text] } : cat)
-    }));
-    setNewItemText(prev => ({ ...prev, [catId]: "" }));
-  };
-  const removeItem = (catId, index) => {
-    setAppData(prev => ({
-      ...prev,
-      categories: prev.categories.map(cat => cat.id === catId ? { ...cat, items: cat.items.filter((_, i) => i !== index) } : cat)
-    }));
-  };
-
-  return (
-    <div className="min-h-screen bg-slate-950 text-white pb-28">
-      <div className={`sticky top-0 z-10 bg-slate-950/90 backdrop-blur border-b border-white/10 p-4 ${pulse ? "scale-[1.01]" : ""} transition-transform`}>
-        <div className={`rounded-3xl p-5 bg-gradient-to-br ${colorMap[appData.color]} shadow-2xl`}>
-          <div className="flex items-center justify-between gap-3">
+      <section id="settingsView" class="view">
+        <div class="panel settings">
+          <div class="settings-head">
+            <img src="icon.png" class="hero-icon" alt="">
             <div>
-              <p className="text-xs opacity-80">오늘의 성장 만트라</p>
-              {editMode ? (
-                <textarea
-                  className="mt-2 w-full rounded-2xl p-3 text-slate-900 font-semibold"
-                  value={appData.mantra}
-                  onChange={(e) => updateMantra(e.target.value)}
-                />
-              ) : (
-                <h1 className="mt-2 text-2xl font-black leading-tight">{appData.mantra}</h1>
-              )}
+              <h2>앱 설정</h2>
+              <p>Safari에서 홈 화면에 추가하면 앱처럼 쓸 수 있어.</p>
             </div>
-            <Sparkles className="shrink-0" />
+          </div>
+
+          <label>앱 이름</label>
+          <input id="appNameInput" class="text-input">
+
+          <label>테마 색상</label>
+          <div id="colorPicker" class="color-picker"></div>
+
+          <button id="resetDayBtn" class="ghost">선택한 날짜 체크 초기화</button>
+
+          <div class="tip">
+            아이폰: Safari에서 링크 열기 → 공유 버튼 → <b>홈 화면에 추가</b>.
           </div>
         </div>
+      </section>
+    </main>
 
-        <div className="mt-4 flex items-center justify-between">
-          <button onClick={() => changeDate(-1)} className="p-2 rounded-full bg-white/10"><ChevronLeft /></button>
-          <div className="text-center">
-            <p className="font-bold">{formatDate(selectedDate)}</p>
-            <button onClick={() => setSelectedDate(todayKey())} className="text-xs text-white/60">오늘로 돌아가기</button>
-          </div>
-          <button onClick={() => changeDate(1)} className="p-2 rounded-full bg-white/10"><ChevronRight /></button>
-        </div>
+    <nav class="bottom-nav">
+      <button data-tab="home" class="nav-btn active">⌂<span>오늘</span></button>
+      <button data-tab="stats" class="nav-btn">▥<span>기록</span></button>
+      <button data-tab="settings" class="nav-btn">⚙<span>설정</span></button>
+    </nav>
+  </div>
 
-        <div className="mt-4">
-          <div className="flex justify-between text-sm mb-1">
-            <span>진행률</span><span>{completed}/{total} · {percent}%</span>
-          </div>
-          <div className="h-3 rounded-full bg-white/10 overflow-hidden">
-            <div className={`h-full bg-gradient-to-r ${colorMap[appData.color]} rounded-full transition-all`} style={{ width: `${percent}%` }} />
-          </div>
-        </div>
-      </div>
-
-      <main className="p-4 space-y-4">
-        <div className="flex gap-2 overflow-x-auto pb-1">
-          {Object.keys(colorMap).map(color => (
-            <button
-              key={color}
-              onClick={() => setAppData(prev => ({ ...prev, color }))}
-              className={`px-4 py-2 rounded-full text-sm whitespace-nowrap bg-gradient-to-r ${colorMap[color]} ${appData.color === color ? "ring-2 ring-white" : "opacity-70"}`}
-            >{color}</button>
-          ))}
-        </div>
-
-        {appData.categories.map(cat => (
-          <section key={cat.id} className="rounded-3xl bg-white/10 border border-white/10 p-4 shadow-xl">
-            <div className="flex items-center justify-between gap-2 mb-3">
-              {editMode ? (
-                <input
-                  className="w-full rounded-xl p-2 text-slate-900 font-bold"
-                  value={cat.title}
-                  onChange={(e) => updateCategoryTitle(cat.id, e.target.value)}
-                />
-              ) : (
-                <h2 className="font-black text-lg">{cat.title}</h2>
-              )}
-            </div>
-
-            <div className="space-y-2">
-              {cat.items.map((item, index) => {
-                const key = `${cat.id}::${item}`;
-                const done = !!dayLog[key];
-                return (
-                  <div key={`${item}-${index}`} className={`flex items-center gap-3 rounded-2xl p-3 ${done ? "bg-white/20" : "bg-black/20"}`}>
-                    <button
-                      onClick={() => toggleItem(cat.id, item)}
-                      className={`w-7 h-7 rounded-full border-2 flex items-center justify-center ${done ? `bg-gradient-to-r ${colorMap[appData.color]} border-white` : "border-white/40"}`}
-                    >{done ? "✓" : ""}</button>
-                    {editMode ? (
-                      <input
-                        className="flex-1 rounded-xl p-2 text-slate-900"
-                        value={item}
-                        onChange={(e) => updateItem(cat.id, index, e.target.value)}
-                      />
-                    ) : (
-                      <span className={`flex-1 ${done ? "line-through text-white/50" : ""}`}>{item}</span>
-                    )}
-                    {editMode && (
-                      <button onClick={() => removeItem(cat.id, index)} className="p-2 text-rose-300"><Trash2 size={18} /></button>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-
-            {editMode && (
-              <div className="mt-3 flex gap-2">
-                <input
-                  className="flex-1 rounded-xl p-3 text-slate-900"
-                  placeholder="새 항목 추가"
-                  value={newItemText[cat.id] || ""}
-                  onChange={(e) => setNewItemText(prev => ({ ...prev, [cat.id]: e.target.value }))}
-                  onKeyDown={(e) => { if (e.key === "Enter") addItem(cat.id); }}
-                />
-                <button onClick={() => addItem(cat.id)} className={`px-4 rounded-xl bg-gradient-to-r ${colorMap[appData.color]}`}><Plus /></button>
-              </div>
-            )}
-          </section>
-        ))}
-      </main>
-
-      <div className="fixed bottom-0 left-0 right-0 p-4 bg-slate-950/90 backdrop-blur border-t border-white/10">
-        <button
-          onClick={() => setEditMode(!editMode)}
-          className={`w-full rounded-2xl py-4 font-black flex items-center justify-center gap-2 bg-gradient-to-r ${editMode ? "from-emerald-500 to-lime-500" : colorMap[appData.color]}`}
-        >
-          {editMode ? <Save size={20} /> : <Edit3 size={20} />}
-          {editMode ? "수정 저장하기" : "내용 수정하기"}
-        </button>
-      </div>
-    </div>
-  );
-}
+  <script src="app.js"></script>
+</body>
+</html>
