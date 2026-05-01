@@ -1,0 +1,16 @@
+<!doctype html><html lang="ko"><head>
+<meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover"/>
+<title>성장 만다라트</title><link rel="manifest" href="./manifest.json?v=2">
+<link rel="apple-touch-icon" href="./apple-touch-icon.png?v=2">
+<meta name="apple-mobile-web-app-title" content="성장 만다라트">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="theme-color" content="#d8c4ff"><link rel="stylesheet" href="./style.css?v=2"/></head>
+<body><div id="splash" class="splash"><img src="./icon.png?v=2"><h1>성장 만다라트</h1></div>
+<div class="app"><header class="topbar"><div class="brand"><img src="./icon.png?v=2" class="appicon"><div><p>My Daily Mandala</p><h1>성장 만다라트</h1></div></div><button id="editBtn" class="pill">수정</button></header>
+<main>
+<section id="homeView" class="view active"><section class="hero"><span class="label">오늘의 중심</span><h2 id="mantraText"></h2><textarea id="mantraEdit" class="hidden"></textarea><div class="progressBox"><div class="row"><span>오늘 선택/완료</span><b id="progressText">0/3</b></div><div class="bar"><div id="barFill"></div></div></div></section><section class="dateNav"><button id="prevDay">‹</button><div><b id="dateLabel"></b><small id="todayBtn">오늘로 돌아가기</small></div><button id="nextDay">›</button></section><section id="mandalaGrid" class="mandalaGrid"></section><p class="hint">오늘은 딱 3개만 골라도 충분해 ✨</p></section>
+<section id="detailView" class="view"><button id="backBtn" class="back">← 만다라로 돌아가기</button><h2 id="detailTitle"></h2><section id="detailList" class="detailList"></section></section>
+<section id="statsView" class="view"><section class="card"><h2>최근 7일 기록</h2><div id="statsList"></div></section></section>
+<section id="settingsView" class="view"><section class="card"><h2>설정</h2><label>중심 만트라</label><textarea id="settingsMantra"></textarea><button id="resetToday" class="ghost">선택한 날짜 기록 초기화</button><button id="resetAll" class="danger">전체 기록 초기화</button><div class="tip">아이폰에서 Safari로 열고 공유 버튼 → 홈 화면에 추가하면 앱처럼 쓸 수 있어.</div></section></section>
+</main><nav class="bottomNav"><button data-tab="homeView" class="active">⌂<span>만다라</span></button><button data-tab="statsView">▥<span>기록</span></button><button data-tab="settingsView">⚙<span>설정</span></button></nav></div>
+<script src="./app.js?v=2" defer></script><script>window.addEventListener("load",()=>setTimeout(()=>{const s=document.getElementById("splash");if(s){s.classList.add("hide");setTimeout(()=>s.remove(),500)}},850));setTimeout(()=>{const s=document.getElementById("splash");if(s){s.classList.add("hide");setTimeout(()=>s.remove(),500)}},2200);</script></body></html>

@@ -1,0 +1,27 @@
+
+const STORAGE_KEY="mandala-final-v1";
+const defaultData={mantra:"나는 바쁜 와중에도\n나를 성장시키는 사람이다",categories:{"시간관리":["하루 3가지 핵심","아침 집중","중요한 일 먼저","SNS 제한","시간 낭비 줄이기","저녁 루틴","주간 계획","미루지 않기","하루 돌아보기"],"영어":["쉐도잉","대화 5분","표현 암기","영어로 생각","소리내기","틀려도 말하기","리스닝","따라쓰기","실생활 문장"],"건강":["스트레칭","물 마시기","수면","운동","설탕 줄이기","단백질","자세","눈 휴식","몸 체크"],"멘탈":["완벽 버리기","멈추기","비난 금지","감사","비교 금지","스트레스 해소","긍정","자기 인정","휴식"],"엄마 역할":["말 듣기","칭찬","공감","잔소리 줄이기","웃기","관심","스킨십","긍정 말","대화"],"재정":["투자","지출 기록","소비 줄이기","가격 비교","목표 확인","저축","카드 체크","흐름 이해","이유 생각"],"실행력":["5분 시작","행동 먼저","바로 시작","완벽 X","바로 처리","작은 성공","기준 낮추기","수정","끝까지"],"관계":["연락","감사","칭찬","비교 X","대화","경청","입장 이해","갈등 줄이기","유지"],"신앙":["기도","감사 기도","성경","적용","맡기기","멈추기","집중","용서","겸손"]}};
+const grid=["시간관리","영어","건강","멘탈","CENTER","엄마 역할","재정","실행력","신앙"];
+let state={data:JSON.parse(JSON.stringify(defaultData)),logs:{},selectedDate:todayKey(),selectedCategory:null,edit:false};
+function todayKey(date=new Date()){return `${date.getFullYear()}-${String(date.getMonth()+1).padStart(2,"0")}-${String(date.getDate()).padStart(2,"0")}`}
+function formatDate(key){return new Date(key+"T00:00:00").toLocaleDateString("ko-KR",{month:"long",day:"numeric",weekday:"short"})}
+function load(){try{const s=JSON.parse(localStorage.getItem(STORAGE_KEY));if(s){state.data=s.data||state.data;state.logs=s.logs||{}}}catch(e){}}
+function save(){localStorage.setItem(STORAGE_KEY,JSON.stringify({data:state.data,logs:state.logs}))}
+function dayLog(){state.logs[state.selectedDate]=state.logs[state.selectedDate]||{};return state.logs[state.selectedDate]}
+function key(c,i){return `${c}::${i}`}
+function checkedCount(){return Object.values(dayLog()).filter(Boolean).length}
+function categoryCount(cat){const log=dayLog();return state.data.categories[cat].filter(i=>log[key(cat,i)]).length}
+function show(view){document.querySelectorAll(".view").forEach(v=>v.classList.remove("active"));document.getElementById(view).classList.add("active");document.querySelectorAll(".bottomNav button").forEach(b=>b.classList.toggle("active",b.dataset.tab===view))}
+function render(){save();document.getElementById("dateLabel").textContent=formatDate(state.selectedDate);document.getElementById("mantraText").innerHTML=state.data.mantra.replaceAll("\n","<br>");document.getElementById("mantraEdit").value=state.data.mantra;document.getElementById("settingsMantra").value=state.data.mantra;document.getElementById("mantraText").classList.toggle("hidden",state.edit);document.getElementById("mantraEdit").classList.toggle("hidden",!state.edit);document.getElementById("editBtn").textContent=state.edit?"저장":"수정";const count=checkedCount();document.getElementById("progressText").textContent=`${count}/3`;document.getElementById("barFill").style.width=`${Math.min(count,3)/3*100}%`;renderGrid();renderDetail();renderStats()}
+function renderGrid(){const wrap=document.getElementById("mandalaGrid");wrap.innerHTML="";grid.forEach(name=>{const div=document.createElement("button");div.className="cell"+(name==="CENTER"?" center":"");if(name==="CENTER"){div.textContent=state.data.mantra}else{const c=categoryCount(name);div.innerHTML=`${name}<span class="badge">${c}/9</span>`;if(c>0)div.classList.add("done");div.onclick=()=>{state.selectedCategory=name;show("detailView");render()}}wrap.appendChild(div)})}
+function renderDetail(){const cat=state.selectedCategory;if(!cat)return;document.getElementById("detailTitle").textContent=cat;const wrap=document.getElementById("detailList");wrap.innerHTML="";state.data.categories[cat].forEach(item=>{const k=key(cat,item),is=!!dayLog()[k];const row=document.createElement("button");row.className="detailItem"+(is?" checked":"");row.innerHTML=`<span class="check">${is?"✓":""}</span><span>${item}</span>`;row.onclick=()=>{const log=dayLog();if(!log[k]&&checkedCount()>=3){alert("오늘은 3개만! 이미 3개 골랐어 😎");return}log[k]=!log[k];if(navigator.vibrate)navigator.vibrate(35);render()};wrap.appendChild(row)})}
+function renderStats(){const wrap=document.getElementById("statsList");wrap.innerHTML="";for(let i=6;i>=0;i--){const d=new Date();d.setDate(d.getDate()-i);const dk=todayKey(d),log=state.logs[dk]||{},count=Object.values(log).filter(Boolean).length;const div=document.createElement("div");div.className="stat";div.innerHTML=`<div class="statTop"><span>${formatDate(dk)}</span><span>${count}/3</span></div><div class="statBar"><div class="statFill" style="width:${Math.min(count,3)/3*100}%"></div></div>`;wrap.appendChild(div)}}
+function changeDay(n){const d=new Date(state.selectedDate+"T00:00:00");d.setDate(d.getDate()+n);state.selectedDate=todayKey(d);render()}
+load();render();
+document.getElementById("editBtn").onclick=()=>{state.edit=!state.edit;render()};
+document.getElementById("mantraEdit").oninput=e=>{state.data.mantra=e.target.value;render()};
+document.getElementById("settingsMantra").oninput=e=>{state.data.mantra=e.target.value;render()};
+document.getElementById("prevDay").onclick=()=>changeDay(-1);document.getElementById("nextDay").onclick=()=>changeDay(1);document.getElementById("todayBtn").onclick=()=>{state.selectedDate=todayKey();render()};document.getElementById("backBtn").onclick=()=>show("homeView");
+document.getElementById("resetToday").onclick=()=>{if(confirm("선택한 날짜 기록 지울까?")){state.logs[state.selectedDate]={};render()}};
+document.getElementById("resetAll").onclick=()=>{if(confirm("전체 기록을 다 지울까?")){state.logs={};render()}};
+document.querySelectorAll(".bottomNav button").forEach(b=>b.onclick=()=>show(b.dataset.tab));

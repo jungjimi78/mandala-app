@@ -1,0 +1,1 @@
+성장 만다라트 최종 앱\n\nZIP 풀고 안에 있는 파일 전체를 GitHub repo root에 덮어쓰기 → Commit → Safari에서 홈 화면에 추가.
